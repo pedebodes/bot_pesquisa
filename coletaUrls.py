@@ -29,43 +29,11 @@ def google_results(busca, n_results):
     links=[i.group(1) for i in results if i != None]
     for x in results:
         if x != None:
-            print ("########################")
-            print (x.group(1))
-            print (urlparse(x.group(1)).netloc)
-            print ("########################")
             session.add(UrlBase(dominio = urlparse(x.group(1)).netloc,url = x.group(1)))
             
     session.commit()
-            
-    
     
     return (links)
 
 
 x = google_results('6206', 30)
-print(x)
-
-
-
-
-
-# c1 = Customers(name = 'Ravi Kumar', address = 'Station Road Nanded', email = 'ravi@gmail.com')
-
-
-# session.add(c1)
-# session.commit()
-
-# session.add_all([
-#    Customers(name = 'Komal Pande', address = 'Koti, Hyderabad', email = 'komal@gmail.com'), 
-#    Customers(name = 'Rajender Nath', address = 'Sector 40, Gurgaon', email = 'nath@gmail.com'), 
-#    Customers(name = 'S.M.Krishna', address = 'Budhwar Peth, Pune', email = 'smk@gmail.com')]
-# )
-
-# session.commit()
-
-
-
-# result = session.query(Customers).all()
-
-# for row in result:
-#    print ("Name: ",row.name, "Address:",row.address, "Email:",row.email)
