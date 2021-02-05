@@ -42,8 +42,8 @@ def google_results(busca, n_results):
     return (links)
 
 
-x = google_results('6206', 30)
-print(x)
+# x = google_results('6206', 30)
+# print(x)
 
 
 
@@ -69,3 +69,11 @@ print(x)
 
 # for row in result:
 #    print ("Name: ",row.name, "Address:",row.address, "Email:",row.email)
+
+
+result = session.query(UrlBase)\
+    .distinct()\
+    .all()
+
+for row in result:
+   print ("Dominio: ",row.dominio, " <<>>> Url: ",row.url)
