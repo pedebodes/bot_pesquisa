@@ -36,4 +36,5 @@ def google_results(busca, n_results):
     return (links)
 
 
-x = google_results('6206', 30)
+x = google_results('6206', 3000)
+# print(x)

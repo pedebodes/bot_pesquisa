@@ -8,8 +8,8 @@ import sys
 
 new_urls = deque(['https://www.fg.com.br/rolamento-rigido-de-esferas-6206-2z---skf/p']) 
 new_urls = deque(['https://www.cofermeta.com.br/rolamentos/rolamentos/rigidos-de-esferas/rolamento-rigido-de-esferas-6206-z-skf']) 
-new_urls = deque(['https://www.cyhrolamentos.com.br/loja/produto/6206-2RS-250C-ENC']) 
-new_urls = deque(['https://www.oliveirarolamentos.com.br/rolamento-rigido-de-esferas-6206-2rs-30x62x16mm.html']) 
+# new_urls = deque(['https://www.cyhrolamentos.com.br/loja/produto/6206-2RS-250C-ENC']) 
+# new_urls = deque(['https://www.oliveirarolamentos.com.br/rolamento-rigido-de-esferas-6206-2rs-30x62x16mm.html']) 
 
 VARRER_TODO_SITE =  False
 
@@ -40,10 +40,16 @@ while len(new_urls):
     print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
     
     cnpj = re.search("\d{2}.\d{3}.\d{3}/\d{4}-\d{2}", response.text).group()
-    cep = re.search(r"CEP: \d{5}.\d{3}", response.text).group()
+    print (cnpj)
+    try:
+        cep = re.search(r"CEP: \d{5}.\d{3}", response.text).group()
+    except:
+        cep = None
+    print (cep)
+    
+    
     # cep = re.findall(r"\d{5}.\d{3}", response.text, re.I)
     # teste = 29164-030
-    print (cep)
     print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
     
