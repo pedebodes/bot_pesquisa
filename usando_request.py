@@ -7,12 +7,10 @@ import re
 # from urllib.request import Request, urlopen
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
-from tabelas import engine, UrlBase
+from tabelas import engine, UrlBase,session
 
 
-from sqlalchemy.orm import sessionmaker
-Session = sessionmaker(bind = engine)
-session = Session()
+
 
 # informar termo de pesquisa , numero de resultados por pagina
 def google_results(busca, n_results):

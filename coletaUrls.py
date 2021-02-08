@@ -7,15 +7,11 @@ import re
 # from urllib.request import Request, urlopen
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
-from tabelas import engine, UrlBase
-
-
-from sqlalchemy.orm import sessionmaker
-Session = sessionmaker(bind = engine)
-session = Session()
+from tabelas import session, UrlBase,UrlIgnorar
+import json
 
 # informar termo de pesquisa , numero de resultados por pagina
-def google_results(busca, n_results):
+def google_results(busca, n_results,ignorar):
     busca = urllib.parse.quote_plus(busca)
     n_results = n_results
     ua = UserAgent()
@@ -29,6 +25,15 @@ def google_results(busca, n_results):
     links=[i.group(1) for i in results if i != None]
     for x in results:
         if x != None:
+            
+            for ign in ignorar:
+                # TODO: pedente colocar dominios para ser ignorados
+                if ign.find(urlparse(x.group(1)).netloc) < 1:
+                    print("Armanzena {}",urlparse(x.group(1)).netloc)
+                print(ign.dominio)
+            import pdb; pdb.set_trace()
+            
+
             session.add(UrlBase(dominio = urlparse(x.group(1)).netloc,url = x.group(1)))
             
     session.commit()
@@ -36,5 +41,9 @@ def google_results(busca, n_results):
     return (links)
 
 
-x = google_results('6206', 3000)
+
+# Consulta URl para ignorar
+ignorar = session.query(UrlIgnorar).all()
+
+x = google_results('6206', 3000,ignorar)
 # print(x)
