@@ -26,18 +26,18 @@ def google_results(busca, n_results,ignorar):
     for x in results:
         if x != None:
             
-            for ign in ignorar:
-                # TODO: pedente colocar dominios para ser ignorados
-                if ign.find(urlparse(x.group(1)).netloc) < 1:
-                    print("Armanzena {}",urlparse(x.group(1)).netloc)
-                print(ign.dominio)
-            import pdb; pdb.set_trace()
-            
-
-            session.add(UrlBase(dominio = urlparse(x.group(1)).netloc,url = x.group(1)))
+            ignorar = session.query(UrlIgnorar).filter(UrlIgnorar.dominio.ilike(urlparse(x.group(1)).netloc.split('.')[1])).all()
+                        
+            # import pdb; pdb.set_trace()
+            if len(ignorar) == 0:
+                session.add(UrlBase(dominio = urlparse(x.group(1)).netloc,url = x.group(1)))
             
     session.commit()
     
+    
+    
+    
+        
     return (links)
 
 
