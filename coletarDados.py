@@ -78,7 +78,7 @@ for row in result:
         try:
             fixo = re.search('\(\d{2}\)\s\d{4}\-\d{4}', response.text).group()
             celular = re.search('\(\d{2}\)\s\d{5}\-\d{4}', response.text).group()
-            session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone": fixo+"|"+celular })
+            session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone": fixo+" | "+celular })
             session.commit()
         except:
             fixo = None
@@ -87,9 +87,6 @@ for row in result:
 
         
         
-        # cep = re.findall(r"\d{5}.\d{3}", response.text, re.I)
-        # teste = 29164-030
-        # print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
         
         soup = BeautifulSoup(response.text) 
