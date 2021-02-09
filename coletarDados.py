@@ -28,12 +28,12 @@ result = session.query(UrlBase)\
 
     # .filter(UrlBase.dominio == 'www.cofermeta.com.br')\
 for row in result:
-    print ("Dominio: ",row.dominio, " <<>>> Url: ",row.url)
+    # print ("Dominio: ",row.dominio, " <<>>> Url: ",row.url)
     new_urls = deque([row.url])
     while len(new_urls):  
         url = new_urls.popleft()  
         processed_urls.add(url)  
-        print("Processing %s" % url)  
+        print("Processando %s" % url)  
         try:  
             response = requests.get(url)  
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):  
@@ -48,36 +48,43 @@ for row in result:
         new_emails = set(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", response.text, re.I))  
         emails.update(new_emails)  
         
+        #Email
         try:
             email = re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", response.text, re.I)
-            # import pdb; pdb.set_trace()
-            # for email in emails:  
             if len(email) > 0:
-                print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"email": str(email)})
                 session.commit()
-                print(email)    
-                print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-                import pdb; pdb.set_trace()
                 
         except:
             email = None
+        
+        #CNPJ
         try:
-            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
             cnpj = re.search("\d{2}.\d{3}.\d{3}/\d{4}-\d{2}", response.text).group()
-            print (cnpj)
             session.query(UrlBase).filter(UrlBase.id == row.id).update({"cnpj": cnpj})
             session.commit()
-            # session.close()
         except:
             cnpj = None
+
+        #CEP
         try:
             cep = re.search(r"CEP: \d{5}.\d{3}", response.text).group()
-            session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep})
+            session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep.split()[1]})
             session.commit()
         except:
             cep = None
-        print (cep)
+
+        #Telefone
+        try:
+            fixo = re.search('\(\d{2}\)\s\d{4}\-\d{4}', response.text).group()
+            celular = re.search('\(\d{2}\)\s\d{5}\-\d{4}', response.text).group()
+            session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone": fixo+"|"+celular })
+            session.commit()
+        except:
+            fixo = None
+            celular = None
+
+
         
         
         # cep = re.findall(r"\d{5}.\d{3}", response.text, re.I)
