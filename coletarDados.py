@@ -9,7 +9,7 @@ from tabelas import engine, UrlBase,session
 from urllib.parse import urlparse
 import random
 
-
+from time import sleep
 # new_urls = deque(['https://www.fg.com.br/rolamento-rigido-de-esferas-6206-2z---skf/p']) 
 # new_urls = deque(['https://www.cofermeta.com.br/rolamentos/rolamentos/rigidos-de-esferas/rolamento-rigido-de-esferas-6206-z-skf']) 
 # new_urls = deque(['https://www.cyhrolamentos.com.br/loja/produto/6206-2RS-250C-ENC']) 
@@ -25,11 +25,12 @@ processed_urls = set()
 emails = set()  
 
 result = session.query(UrlBase)\
+    .filter(UrlBase.id >= 27)\
     .distinct()\
     .all()
     # .filter(UrlBase.dominio == 'www.cofermeta.com.br')\
 
-
+#13  15 26
         
 def getEmail(part1, part2):
     try:
@@ -74,81 +75,64 @@ for row in result:
     while len(new_urls):  
         url = new_urls.popleft()  
         processed_urls.add(url)  
-        ua = UserAgent()
+        ua = UserAgent(cache=False)
         # url = "https://rolamentoscbf.com.br/" # verificar porque não pega dados de tel email cnpj nada, verificar regex ou coisa do tipo , se possivel outra forma de coletar esses dados
         print("Processando %s" % url)  
 
         try:  
+            sleep(random.randint(0,10)) 
+            # headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36', "Upgrade-Insecure-Requests": "1","DNT": "1","Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Accept-Language": "en-US,en;q=0.5","Accept-Encoding": "gzip, deflate"}
+            # response = requests.get(url,headers=headers)
+            response = requests.get(url, {"User-Agent": ua.random} )  
+            parts = urlsplit(url)
+            ua.update()
             
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36', "Upgrade-Insecure-Requests": "1","DNT": "1","Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Accept-Language": "en-US,en;q=0.5","Accept-Encoding": "gzip, deflate"}
-            response = requests.get(url,headers=headers, allow_redirects = True )
-            # response = requests.get(url, {"User-Agent": ua.random}, timeout=5, allow_redirects = True )  
-        except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):  
-            continue  
-
-        parts = urlsplit(url)
-        
-        
-        base_url = "{0.scheme}://{0.netloc}".format(parts)  
-        path = url[:url.rfind('/')+1] if '/' in parts.path else url     
-        
-        new_emails = set(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", response.text, re.I))  
-        emails.update(new_emails)  
-        
-
-        email = getEmail(response.text, re.I)
-        if email is not None and len(email) > 0:
-            session.query(UrlBase).filter(UrlBase.id == row.id).update({"email": str(email)})
-        
-        cnpj = getCnpj(response.text)
-        if cnpj is not None:
-            session.query(UrlBase).filter(UrlBase.id == row.id).update({"cnpj": cnpj})
-
-        cep = getCep(response.text)
-        if cep is not None:
-            session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep.split()[1]})
-
-        fixo =getTelefoneFixo(response.text)  
-        if fixo is not None:
-            session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_fixo": fixo})
+            base_url = "{0.scheme}://{0.netloc}".format(parts)  
+            path = url[:url.rfind('/')+1] if '/' in parts.path else url     
             
-        celular =getCelular(response.text) 
-        if celular is not None:
-            session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_celular": celular })
-        
-        
-        session.commit()
-
-
-        
-
-        
-        soup = BeautifulSoup(response.text) 
-        
-        
-        for anchor in soup.find_all("a"):  
-            link = anchor.attrs["href"] if "href" in anchor.attrs else ''  
-            if link.startswith('/'):  
-                link = base_url + link  
-            elif not link.startswith('http'):  
-                link = path + link  
-                # import pdb; pdb.set_trace()
-            if not link in new_urls and not link in processed_urls and VARRER_TODO_SITE:  
-                print(link)
-                aux = urlparse(link)
-                if row.dominio == aux.netloc :
-                    # import pdb; pdb.set_trace()
-                    new_urls.append(link)  
-                
-                
-                
-        # for email in emails:  
-        #     session.query(UrlBase).filter(UrlBase.id == row.id).update({"email": email})
-        #     session.commit()
-        #     print(email)     
+            new_emails = set(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", response.text, re.I))  
+            emails.update(new_emails)  
             
-        # if not VARRER_TODO_SITE :
-        
-        #     sys.exit()
-        
-        
+
+            email = getEmail(response.text, re.I)
+            if email is not None and len(email) > 0:
+                session.query(UrlBase).filter(UrlBase.id == row.id).update({"email": str(email)})
+            
+            cnpj = getCnpj(response.text)
+            if cnpj is not None:
+                session.query(UrlBase).filter(UrlBase.id == row.id).update({"cnpj": cnpj})
+
+            cep = getCep(response.text)
+            if cep is not None:
+                session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep.split()[1]})
+
+            fixo =getTelefoneFixo(response.text)  
+            if fixo is not None:
+                session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_fixo": fixo})
+                
+            celular =getCelular(response.text) 
+            if celular is not None:
+                session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_celular": celular })
+            
+            session.commit()
+
+            soup = BeautifulSoup(response.text) 
+            
+            for anchor in soup.find_all("a"):  
+                link = anchor.attrs["href"] if "href" in anchor.attrs else ''  
+                if link.startswith('/'):  
+                    link = base_url + link  
+                elif not link.startswith('http'):  
+                    link = path + link  
+                if not link in new_urls and not link in processed_urls and VARRER_TODO_SITE:  
+                    print(link)
+                    aux = urlparse(link)
+                    if row.dominio == aux.netloc :
+                        new_urls.append(link)  
+            # sleep(2)  #2021-02-10 11:32 27
+
+        except ():  
+        # except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):  
+            # TODO: criar log ou aramzenar no banco a url que der erro
+            # continue
+            break  

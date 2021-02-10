@@ -1,53 +1,70 @@
-# from bs4 import BeautifulSoup
+# import re
 # from urllib.request import urlopen
-# import re
 
-# url = "https://www.cofermeta.com.br/rolamentos/rolamentos/rigidos-de-esferas/rolamento-rigido-de-esferas-6206-z-skf"
-# page = urlopen(url)
-# html = page.read()#.decode("utf-8")
-# soup = BeautifulSoup(html, "html.parser")
+# url = "https://rolamentoscbf.com.br/"
+# website = urlopen(url).read().decode('utf8')
 
-# # print(soup.get_text())
-
-# print (soup.find_all("a"))
-
-
-# import re
-# from requests_html import HTMLSession
-
-# url = "https://www.fg.com.br/rolamento-rigido-de-esferas-6206-2z---skf/p"
-# EMAIL_REGEX = r"""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"""
-
-# # initiate an HTTP session
-# session = HTMLSession()
+# print()
+# print()
+# print("Phone Numbers: ")
+# numbers = (re.findall(r"((?:\d{3}|\(\d{3}\))?(?:\s|-|\.)?\d{3}(?:\s|-|\.)\d{4})",website))
+# print (', '.join(map(str, numbers)))
+# print()
+# print()
+# print("Emails: ")
+# emails = (re.findall(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}",website))
+# print (', '.join(map(str, emails)))
 
 
-# # get the HTTP Response
-# r = session.get(url)
-
-# # for JAVA-Script driven websites
-# r.html.render()
-
-# for re_match in re.finditer(EMAIL_REGEX, r.html.raw_html.decode()):
-#     print(re_match.group())
-
-
-
+import requests
 from bs4 import BeautifulSoup
-from urllib.request import urlopen
 import re
+import urllib.parse
+from urllib.parse import urlparse
+from tabelas import session, UrlBase,UrlIgnorar
+import pathlib
 
-html_page = urlopen("https://www.cofermeta.com.br/rolamentos/rolamentos/rigidos-de-esferas/rolamento-rigido-de-esferas-6206-z-skf")
-html_page = urlopen("https://www.cyhrolamentos.com.br/loja/produto/6206-2RS-250C-ENC")
-soup = BeautifulSoup(html_page)
+def pesquisaWeb(query,ignorar):
+    g_clean = [ ] 
+    url = 'https://www.google.com/search?client=ubuntu&channel=fs&q={}&ie=utf-8&num=3000&oe=utf-8'.format(query)
+    try:
+            html = requests.get(url)
+            if html.status_code==200:
+                soup = BeautifulSoup(html.text, 'lxml')
+                a = soup.find_all('a') 
+                for i in a:
+                    k = i.get('href')
+                    try:
+                        m = re.search("(?P<url>https?://[^\s]+)", k)
+                        n = m.group(0)
+                        url = n.split('&')[0]
+                        domain = urlparse(url)
+                        if(re.search('google.com', domain.netloc)):
+                            continue
+                        else:
+                            ignorar = session.query(UrlIgnorar).filter(UrlIgnorar.dominio.ilike(urlparse(url).netloc.split('.')[1])).all()
+                            if len(ignorar) == 0:
+                                ext = pathlib.Path(url).suffix
+                                ignorarExtensoes = ['.xls','.xlsx', '.pdf', '.rar', '.exe'] 
+                                result = list(filter(lambda x: str(ext).lower() in x, ignorarExtensoes)) 
+                                if len(result) > 0:
+                                    g_clean.append(url)
+                                    session.add(UrlBase(dominio = urlparse(url).netloc,url =urlparse(url).scheme+"://"+urlparse(url).netloc))
+                                else:
+                                    session.add(UrlBase(dominio = urlparse(url).netloc,url = url))
+                                session.commit()
+                    except:
+                        continue
+    except Exception as ex:
+            print(str(ex))
+    finally:
+            return g_clean
 
-print(soup.get_text())
-# import re
-x = soup(text=re.compile('@'))
 
-print("XXXXXXXXXXXXXXXXXXXXXXXXXXXxx")
+# Consulta URl para ignorar
+ignorar = session.query(UrlIgnorar).all()
+
+x = (pesquisaWeb("rolamentos",ignorar))
+
 print(x)
-print("XXXXXXXXXXXXXXXXXXXXXXXXXXXxx")
 
-
-# import pdb; pdb.set_trace()
