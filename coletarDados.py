@@ -33,7 +33,11 @@ result = session.query(UrlBase)\
         
 def getEmail(part1, part2):
     try:
-        return re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", part1, part2)
+        return list(
+            dict.fromkeys(
+                re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", part1, part2)
+                )
+            )
     except:
         return None
 
