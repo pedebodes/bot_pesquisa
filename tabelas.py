@@ -15,7 +15,8 @@ class UrlBase(Base):
    dominio = Column(String)    
    url =Column(String) 
    cnpj = Column(String)
-   telefone = Column(String)
+   telefone_fixo = Column(String)
+   telefone_celular = Column(String)
    cep = Column(String)
    email = Column(String)
 
