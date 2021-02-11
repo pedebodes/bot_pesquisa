@@ -10,10 +10,6 @@ from urllib.parse import urlparse
 import random
 
 from time import sleep
-# new_urls = deque(['https://www.fg.com.br/rolamento-rigido-de-esferas-6206-2z---skf/p']) 
-# new_urls = deque(['https://www.cofermeta.com.br/rolamentos/rolamentos/rigidos-de-esferas/rolamento-rigido-de-esferas-6206-z-skf']) 
-# new_urls = deque(['https://www.cyhrolamentos.com.br/loja/produto/6206-2RS-250C-ENC']) 
-# new_urls = deque(['https://www.oliveirarolamentos.com.br/rolamento-rigido-de-esferas-6206-2rs-30x62x16mm.html']) 
 
 VARRER_TODO_SITE =  False
 # VARRER_TODO_SITE =  True
@@ -25,12 +21,12 @@ processed_urls = set()
 emails = set()  
 
 result = session.query(UrlBase)\
-    .filter(UrlBase.id >= 27)\
+    .filter(UrlBase.id <= 15)\
     .distinct()\
     .all()
     # .filter(UrlBase.dominio == 'www.cofermeta.com.br')\
 
-#13  15 26
+#13  15 26 51
         
 def getEmail(part1, part2):
     try:
@@ -63,20 +59,18 @@ def getCelular(part1):
       
 def getCep(part1):
     try:
-        return re.search(r"CEP: \d{5}.\d{3}", part1).group()
+        return re.search(r"CEP:\d{5}.\d{3}", part1).group()
     except:
         return None
-      
 
 
 for row in result:
-    # print ("Dominio: ",row.dominio, " <<>>> Url: ",row.url)
     new_urls = deque([row.url])
     while len(new_urls):  
         url = new_urls.popleft()  
         processed_urls.add(url)  
         ua = UserAgent(cache=False)
-        # url = "https://rolamentoscbf.com.br/" # verificar porque não pega dados de tel email cnpj nada, verificar regex ou coisa do tipo , se possivel outra forma de coletar esses dados
+        # url = "https://rolamentoscbf.com.br/"
         print("Processando %s" % url)  
 
         try:  
@@ -129,10 +123,8 @@ for row in result:
                     aux = urlparse(link)
                     if row.dominio == aux.netloc :
                         new_urls.append(link)  
-            # sleep(2)  #2021-02-10 11:32 27
 
-        except ():  
-        # except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):  
-            # TODO: criar log ou aramzenar no banco a url que der erro
+        except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):  
+            # TODO: criar log ou armazenar no banco a url que der erro
             # continue
             break  
