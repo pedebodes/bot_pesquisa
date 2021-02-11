@@ -8,11 +8,19 @@ import re
 from tabelas import engine, UrlBase,session
 from urllib.parse import urlparse
 import random
+from fake_headers import Headers
 
 from time import sleep
 
-VARRER_TODO_SITE =  False
-# VARRER_TODO_SITE =  True
+header = Headers(
+        browser="chrome",
+        # os="win",
+        headers=True
+    )
+
+
+# VARRER_TODO_SITE =  False
+VARRER_TODO_SITE =  True
 
 
 processed_urls = set() 
@@ -21,9 +29,9 @@ processed_urls = set()
 emails = set()  
 
 result = session.query(UrlBase)\
-    .filter(UrlBase.id <= 15)\
     .distinct()\
     .all()
+    # .filter(UrlBase.id == 94 )\
     # .filter(UrlBase.dominio == 'www.cofermeta.com.br')\
 
 #13  15 26 51
@@ -47,19 +55,29 @@ def getCnpj(part1):
     pass
 def getTelefoneFixo(part1):
     try:
-      return re.search('\(\d{2}\)\s\d{4}\-\d{4}', part1).group()
+      return re.search('\(\d{2}\) \s\d{4}\-\d{4}', part1).group()
     except:
         return None
     
 def getCelular(part1):
     try:
-        return re.search('\(\d{2}\)\s\d{5}\-\d{4}', part1).group()
+        return re.search('\(\d{2}\) \s\d{5}\-\d{4}', part1).group()
+    except:
+        return None
+def getCelularAPI(part1):
+    try:
+        return re.search('\d{13}', part1).group()
     except:
         return None
       
 def getCep(part1):
     try:
-        return re.search(r"CEP:\d{5}.\d{3}", part1).group()
+        return re.search(r"CEP: \d{5}.\d{3}", part1).group()
+    except:
+        return None
+def getCep1(part1):
+    try:
+        return re.search(r"\d{5}-\d{3}", part1).group()
     except:
         return None
 
@@ -75,9 +93,14 @@ for row in result:
 
         try:  
             sleep(random.randint(0,10)) 
-            # headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36', "Upgrade-Insecure-Requests": "1","DNT": "1","Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Accept-Language": "en-US,en;q=0.5","Accept-Encoding": "gzip, deflate"}
-            # response = requests.get(url,headers=headers)
+            # headers = {"User-agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36"}
+            # response = requests.get(url, headers=headers )  
             response = requests.get(url, {"User-Agent": ua.random} )  
+            while response.status_code != 200:
+                sleep(random.randint(0,10)) 
+                response = requests.get(url, headers=header.generate() ) 
+                    
+                
             parts = urlsplit(url)
             ua.update()
             
@@ -96,6 +119,10 @@ for row in result:
             if cnpj is not None:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"cnpj": cnpj})
 
+            cep = getCep1(response.text)
+            if cep is not None:
+                session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep})
+                
             cep = getCep(response.text)
             if cep is not None:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep.split()[1]})
@@ -104,13 +131,26 @@ for row in result:
             if fixo is not None:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_fixo": fixo})
                 
+            
+            celularAPI =getCelularAPI(response.text)                 
+            if celularAPI is not None:
+                celularAPI = celularAPI if celularAPI[:2] == '55' else None
+                if celularAPI is not None:
+                    session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_celular": celularAPI })
+            
             celular =getCelular(response.text) 
+                                                      
             if celular is not None:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_celular": celular })
-            
+                
+            # import pdb; pdb.set_trace()
+                
+                
+            # import pdb; pdb.set_trace()                
             session.commit()
 
-            soup = BeautifulSoup(response.text) 
+    
+            soup = BeautifulSoup(response.text ,"html.parser") #lxml
             
             for anchor in soup.find_all("a"):  
                 link = anchor.attrs["href"] if "href" in anchor.attrs else ''  
