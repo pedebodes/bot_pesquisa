@@ -20,6 +20,7 @@ class UrlBase(Base):
    cep = Column(String)
    email = Column(String)
    endereco = Column(String)
+   dados_cnpj = Column(String)
 
 
 class UrlIgnorar(Base):

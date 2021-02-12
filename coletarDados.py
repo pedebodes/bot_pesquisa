@@ -11,7 +11,7 @@ import random
 from fake_headers import Headers
 import viacep
 from time import sleep
-import consulta_cnpj
+from consulta_cnpj import consulta
 header = Headers(
         browser="chrome",
         # os="win",
@@ -30,8 +30,8 @@ emails = set()
 result = session.query(UrlBase)\
     .distinct()\
     .all()
-    # .filter(UrlBase.id == 3 )\
     # .filter(UrlBase.dominio == 'www.cofermeta.com.br')\
+    # .filter(UrlBase.id == 2 )\
 
 #13  15 26 51
         
@@ -115,10 +115,13 @@ for row in result:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"email": str(email)})
             
             cnpj = getCnpj(response.text)
-            # consulta('29.302.348/0001-15')
-            import pdb; pdb.set_trace()
             if cnpj is not None:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"cnpj": cnpj})
+                try:
+                    session.query(UrlBase).filter(UrlBase.id == row.id).update({"dados_cnpj": str(consulta(cnpj))})
+                except:
+                    pass
+
 
             cep = getCep1(response.text)
             if cep is not None:
