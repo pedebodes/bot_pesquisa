@@ -68,3 +68,12 @@ header = Headers(
 
 
 print (header.generate())
+
+import viacep
+
+d = viacep.ViaCEP('32010040') #32010040
+data = d.getDadosCEP()
+# print (data['erro'])
+print(type(data))
+if not "erro" in data:
+    print("bosta")

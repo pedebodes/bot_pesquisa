@@ -3,3 +3,4 @@ __pycache__/*
 *.db
 .vscode/*
 apagar/*
+viacep/__pycache__/*.pyc

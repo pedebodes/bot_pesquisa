@@ -9,9 +9,9 @@ from tabelas import engine, UrlBase,session
 from urllib.parse import urlparse
 import random
 from fake_headers import Headers
-
+import viacep
 from time import sleep
-
+import consulta_cnpj
 header = Headers(
         browser="chrome",
         # os="win",
@@ -19,8 +19,7 @@ header = Headers(
     )
 
 
-# VARRER_TODO_SITE =  False
-VARRER_TODO_SITE =  True
+VARRER_TODO_SITE =  False
 
 
 processed_urls = set() 
@@ -31,7 +30,7 @@ emails = set()
 result = session.query(UrlBase)\
     .distinct()\
     .all()
-    # .filter(UrlBase.id == 94 )\
+    # .filter(UrlBase.id == 3 )\
     # .filter(UrlBase.dominio == 'www.cofermeta.com.br')\
 
 #13  15 26 51
@@ -96,7 +95,7 @@ for row in result:
             # headers = {"User-agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36"}
             # response = requests.get(url, headers=headers )  
             response = requests.get(url, {"User-Agent": ua.random} )  
-            while response.status_code != 200:
+            if response.status_code != 200:
                 sleep(random.randint(0,10)) 
                 response = requests.get(url, headers=header.generate() ) 
                     
@@ -116,16 +115,34 @@ for row in result:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"email": str(email)})
             
             cnpj = getCnpj(response.text)
+            # consulta('29.302.348/0001-15')
+            import pdb; pdb.set_trace()
             if cnpj is not None:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"cnpj": cnpj})
 
             cep = getCep1(response.text)
             if cep is not None:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep})
+                try:
+                    d = viacep.ViaCEP(cep.replace("-","").replace(".",""))
+                    endereco = d.getDadosCEP()
+                    if not "erro" in endereco:
+                        session.query(UrlBase).filter(UrlBase.id == row.id).update({"endereco": str(endereco)})
+                except:
+                    pass
                 
             cep = getCep(response.text)
             if cep is not None:
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep.split()[1]})
+                try:
+                    d = viacep.ViaCEP(cep.replace("-","").replace(".",""))
+                    endereco = d.getDadosCEP()
+                    if not "erro" in endereco:
+                        session.query(UrlBase).filter(UrlBase.id == row.id).update({"endereco": str(endereco)})
+                except:
+                    pass
+                
+                
 
             fixo =getTelefoneFixo(response.text)  
             if fixo is not None:

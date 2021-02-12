@@ -93,3 +93,85 @@ INSERT INTO "url_base" ("id", "dominio", "url", "cnpj", "telefone_fixo", "telefo
 INSERT INTO "url_base" ("id", "dominio", "url", "cnpj", "telefone_fixo", "telefone_celular", "cep", "email") VALUES (93, 'www.rolimtrac.com.br', 'http://www.rolimtrac.com.br/', NULL, NULL, NULL, '94243-751', '[''contato@rolimtrac.com.br'']');
 INSERT INTO "url_base" ("id", "dominio", "url", "cnpj", "telefone_fixo", "telefone_celular", "cep", "email") VALUES (94, 'www.corremol.com.br', 'https://www.corremol.com.br/', NULL, NULL, '5548999329761', '88815-060', '[''f2d87b48e1a44b85880e63c15c5bebf2@o93922.ingest.sentry.io'', ''corremol@corremol.com.br'', ''+55-corremol@corremol.com.br'']');
 INSERT INTO "url_base" ("id", "dominio", "url", "cnpj", "telefone_fixo", "telefone_celular", "cep", "email") VALUES (95, 'omicrom.com.br', 'http://omicrom.com.br/', NULL, '(41) 3314-3314', NULL, NULL, '[''vendas@omicrom.com.br'']');
+
+
+
+
+
+
+
+
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (2, 'pontofrio');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (3, 'americanas');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (4, 'submarino');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (5, 'passarelacalcados');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (6, 'shoptime');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (7, 'epocacosmeticos');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (8, 'netfarma');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (9, 'shopfato');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (10, 'belezanaweb');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (11, 'marisa');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (12, 'estantevirtual');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (13, 'magazineluiza');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (14, 'bebestore');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (15, 'posthaus');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (16, 'lojavidaecor');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (17, 'cissamagazine');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (18, 'fastshop');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (19, 'clubedoricardo');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (20, 'oboticario');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (21, 'extra');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (22, 'kanui');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (23, 'ricardoeletro');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (24, 'clickon');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (25, 'pontofrio');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (26, 'sephora');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (27, 'walmart');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (28, 'groupon');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (29, 'polishop');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (30, 'petlove');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (31, 'wine');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (32, 'natue');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (33, 'ultrafarma');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (34, 'drogariaaraujo');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (35, 'saraiva');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (36, 'drogasil');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (37, 'kabum');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (38, 'livrariadatravessa');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (39, 'compracerta');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (40, 'onofreemcasa');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (41, 'drogaraia');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (42, 'kalunga');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (43, 'novomundo');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (44, 'lojascolombo');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (45, 'connectparts');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (46, 'panvel');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (47, 'lojasinsinuante');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (48, 'centauro');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (49, 'efacil');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (50, 'dafiti');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (51, 'sorteonline');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (52, 'buscape');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (53, 'mercadolivre');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (54, 'casasbahia');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (55, 'pernambucanas');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (56, 'ebay');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (57, 'aliexpress');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (58, 'www.magazineluiza.com.br');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (59, 'carrefour');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (60, 'planalto');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (61, 'olx');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (62, 'portuguese.alibaba.com');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (63, 'alibaba');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (64, 'paginaamarela');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (65, 'pt.made-in-china.com');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (66, 'brastemp');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (67, 'pt.jn-rollerbearings.com');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (68, 'br.rsdelivers.com');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (69, 'paginaamarela.com.br');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (70, 'paginaamarela');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (71, 'made-in-china');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (72, 'vivianfestas');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (73, 'facebook');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (74, 'wikipedia');
+INSERT INTO "url_ignorar" ("id", "dominio") VALUES (75, 'youtube');

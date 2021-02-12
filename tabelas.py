@@ -19,6 +19,7 @@ class UrlBase(Base):
    telefone_celular = Column(String)
    cep = Column(String)
    email = Column(String)
+   endereco = Column(String)
 
 
 class UrlIgnorar(Base):
