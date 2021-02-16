@@ -9,6 +9,8 @@ from fake_useragent import UserAgent
 import pathlib
 from time import sleep
 import random
+import nltk
+
 header = Headers(
         headers=True
     )
@@ -41,9 +43,6 @@ def getUrls(busca,n_results=3000):
     
     it_url = itemUrl()
     
-    print(response)
-    # import pdb; pdb.set_trace()
-    
     soup = BeautifulSoup(response.text, "html.parser")
     result = soup.find_all('div', attrs = {'class': 'ZINbbc'})
     
@@ -52,7 +51,6 @@ def getUrls(busca,n_results=3000):
         ln = i.find('a', href = True)            
         if ln is not None:
             results.append(re.search('\/url\?q\=(.*)\&sa',str(ln['href'])))
-    # results=[re.search('\/url\?q\=(.*)\&sa',str(i.find('a', href = True)['href'])) for i in result]
     results = res = [i for i in results if i] 
     
     links=[i.group(1) for i in results if i != None]
@@ -73,26 +71,50 @@ def getUrls(busca,n_results=3000):
                 result = list(filter(lambda x: str(ext).lower() in x, ignorarExtensoes))  
                 
                 addUrl = UrlBase()
-                if len(result) > 0:
-                    addUrl.dominio = urlparse(x.group(1)).netloc
-                    addUrl.url = x.group(1)
-                else:
-                    addUrl.dominio = urlparse(x.group(1)).netloc
-                    addUrl.url = urlparse(x.group(1)).scheme+"://"+urlparse(x.group(1)).netloc
+                if bool(urlparse(x.group(1)).netloc.strip()):
+                    if len(result) > 0:
+                        addUrl.dominio = urlparse(x.group(1)).netloc
+                        addUrl.url = x.group(1)
+                    else:
+                        addUrl.dominio = urlparse(x.group(1)).netloc
+                        addUrl.url = urlparse(x.group(1)).scheme+"://"+urlparse(x.group(1)).netloc
+
+                    session.add(addUrl)
+                    session.commit()
                 
-                session.add(addUrl)
-                session.commit()
-                
-                it_url = itemUrl()
-                it_url.url_id =addUrl.id
-                it_url.item_pesquisa_id = item_pesquisa.id
-                session.add(it_url)
-                
+                    it_url = itemUrl()
+                    it_url.url_id =addUrl.id
+                    it_url.item_pesquisa_id = item_pesquisa.id
+                    session.add(it_url)
+                    
                 
     session.commit()
     return (links)    
+
+    
+def pesquisa(busca):
+    ignorar = session.query(ItemPesquisa).all()
+    
+    id_similares = []
+    for i in ignorar:
+        # verifica distancia de similaridade da palavra buscada
+        x = nltk.edit_distance(str(busca), i.item)
+        if x < 3:
+            id_similares.append(i.id)
+    
+    if len(id_similares) > 0:
+        # TODO: PENDETE 
+        
+        return getUrls(busca) # isso vai sair daqui
+    else:
+        print("Busca o pelo nome")
+        # return getUrls(busca)
+        return getUrls(busca)
+
+
 
 
 def getDados():
     # TODO:  Pendente
     pass
+
