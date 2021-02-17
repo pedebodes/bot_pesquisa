@@ -11,6 +11,7 @@ from time import sleep
 import random
 # import nltk
 import util
+import json
 from collections import deque 
 header = Headers(
         headers=True
@@ -120,7 +121,7 @@ def getDados(item_pesquisa_id):
     emails = set()  
 
     result = session.query(UrlBase)\
-        .filter(UrlBase.id > 87 )\
+        .filter(UrlBase.id == 1 )\
         .distinct()\
         .all()
         # .filter(UrlBase.dominio == 'www.cofermeta.com.br')\
@@ -155,35 +156,20 @@ def getDados(item_pesquisa_id):
             cnpj = util.regex('cnpj',response.text)
             if cnpj is not None and cnpj != '[]':
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"cnpj": cnpj})
-                # try:
-                #     session.query(UrlBase).filter(UrlBase.id == row.id).update({"dados_cnpj": str(consulta(cnpj))})
-                # except:
-                #     pass
-
+                try:
+                    session.query(UrlBase).filter(UrlBase.id == row.id).update({"dados_cnpj": str(getDadosCNPJ(cnpj))})
+                except:
+                    pass
 
             cep = util.regex('cep',response.text)
             if cep is not None and cep != '[]':
                 session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep})
-                # try:
-                #     d = viacep.ViaCEP(cep.replace("-","").replace(".",""))
-                #     endereco = d.getDadosCEP()
-                #     if not "erro" in endereco:
-                #         session.query(UrlBase).filter(UrlBase.id == row.id).update({"endereco": str(endereco)})
-                # except:
-                #     pass
-                
-            # cep = getCep(response.text)
-            # if cep is not None:
-            #     session.query(UrlBase).filter(UrlBase.id == row.id).update({"cep": cep.split()[1]})
-                # try:
-                #     d = viacep.ViaCEP(cep.replace("-","").replace(".",""))
-                #     endereco = d.getDadosCEP()
-                #     if not "erro" in endereco:
-                #         session.query(UrlBase).filter(UrlBase.id == row.id).update({"endereco": str(endereco)})
-                # except:
-                #     pass
-                
-                
+                try:
+                    endereco = getDadosCEP(parse_input(cep))
+                    if not "erro" in endereco:
+                        session.query(UrlBase).filter(UrlBase.id == row.id).update({"endereco": endereco})
+                except:
+                    pass
 
             fixo =util.regex('telefone',response.text) 
             if fixo is not None and fixo != '[]':
@@ -220,3 +206,44 @@ def getDados(item_pesquisa_id):
                     if row.dominio == aux.netloc :
                         new_urls.append(link)  
      
+     
+     
+def getDadosCEP(cep):
+    url_api = ('http://www.viacep.com.br/ws/%s/json' % cep)
+    req = requests.get(url_api)
+    if req.status_code == 200:
+        dados_json = json.loads(req.text)
+        return dados_json
+
+def parse_input(i):
+    'Retira caracteres de separação do CNPJ'
+    i = str(i)
+    i = i.replace('.', '')
+    i = i.replace(',', '')
+    i = i.replace('/', '')
+    i = i.replace('-', '')
+    i = i.replace('\\', '')
+    i = i.replace('"', '')
+    i = i.replace('[', '')
+    i = i.replace(']', '')
+    i = i.replace(' ', '')
+    
+    return i
+
+def getDadosCNPJ(cnpj):
+    cnpj = parse_input(cnpj)
+
+    url = 'http://receitaws.com.br/v1/cnpj/{0}'.format(cnpj)
+    opener = urllib.request.build_opener()
+    opener.addheaders = [
+        ('User-agent',
+         " Mozilla/5.0 (Windows NT 6.2; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0")]
+
+    with opener.open(url) as fd:
+        content = fd.read().decode()
+
+    dic = json.loads(content)
+
+    return dic
+   
+    
