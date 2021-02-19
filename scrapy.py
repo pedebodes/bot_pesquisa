@@ -1,14 +1,20 @@
+import requests  # aqui
 import re
 import urllib
 from urllib.parse import urlparse, urlsplit
 from bs4 import BeautifulSoup
+# from requests.models import Response # aqui
 from migrate import session,UrlBase,UrlIgnorar,itemUrl,ItemPesquisa
 from fake_headers import Headers
 from fake_useragent import UserAgent
 import pathlib
+from time import sleep # aqui
+import random # aqui
+# import nltk
 import util
 import json
 from collections import deque 
+from sqlalchemy import func
 
 header = Headers(
         headers=True
@@ -31,7 +37,14 @@ def getUrls(busca,n_results=3000):
     session.add(item_pesquisa)
     session.commit()
 
-    response = util.getRequest(url)
+    ua = UserAgent()
+    sleep(random.randint(2,30)) 
+    response = requests.get(url, {"User-Agent": ua.random} )  
+    if response.status_code != 200:
+        sleep(random.randint(2,30)) 
+        response = requests.get(url, headers=header.generate() ) 
+
+    # response = util.getRequest(url)
     soup = BeautifulSoup(response.text, "html.parser")
     result = soup.find_all('div', attrs = {'class': 'ZINbbc'})
     
@@ -50,7 +63,9 @@ def getUrls(busca,n_results=3000):
             if ul == 'www':
                 ul =urlparse(x.group(1)).netloc.split('.')[1]
 
-            ignorar = session.query(UrlIgnorar).filter(UrlIgnorar.dominio.ilike(ul)).all() 
+            ignorar = session.query(UrlIgnorar)\
+                .filter(UrlIgnorar.dominio == urlparse(x.group(1)).scheme+"://"+urlparse(x.group(1)).netloc)\
+                    .all() 
             if len(ignorar) == 0:
                 
                 ext = pathlib.Path(x.group(1)).suffix
@@ -78,17 +93,26 @@ def getUrls(busca,n_results=3000):
                     
                 
     session.commit()
+    
+    # Removendo registros duplicados
+    result = session.query(UrlBase)\
+    .group_by(UrlBase.dominio)\
+    .having(func.count(UrlBase.dominio) > 1)\
+    .all()
+    for i in result:
+        session.query(UrlBase).filter(UrlBase.id==i.id).delete()
+    session.commit()
+    
     return (item_pesquisa.id)    
-    return (links)    
+    
 
     
 def pesquisa(busca):
+    item_pesquisa = getUrls(busca)
+    # getDados(item_pesquisa)
     
-    item_pesquisa =  getUrls(busca)
-    getDados(item_pesquisa)
     
-    
-    return "CHEGOU"
+    return "aui"
 
 
 
@@ -117,8 +141,13 @@ def getDados(item_pesquisa):
             processed_urls.add(url)  
 
             response = util.getRequest(url)    
+            print("############################")    
             print(response)
             if response:
+                if response.status_code != 200:#403 404
+                    print("DEU ERRO")
+                    import pdb; pdb.set_trace()
+                print("############################")    
                 parts = urlsplit(url)
                 # ua.update()
                 
@@ -183,6 +212,7 @@ def getDados(item_pesquisa):
                         if row.dominio == aux.netloc :
                             new_urls.append(link)  
             else:
+                # TODO: incluir a na url caso não retorne nada , ou seja entrou aqui
                 continue
      
      
@@ -217,4 +247,15 @@ def getDadosCNPJ(cnpj):
     if req.status_code == 200:
         return json.loads(req.text)
    
+
+# Adicionar Url na tabela URL_IGNORAR
+def addUrlIgnorar(url):
+    for i in url:    
+        url_ignorar = UrlIgnorar()
+        url_ignorar.dominio = i if i[-1] != '/' else i[:-1]
+        session.add(url_ignorar)
+        session.commit()
+
+    return "Adicionado com sucesso"
+    
     
