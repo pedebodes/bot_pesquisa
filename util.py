@@ -17,7 +17,9 @@ def regex(opcao,arquivo):
         'cep': 'CEP\s*(\d{5})-(\d{3})',
         'cnpj': '\d{2}.\d{3}.\d{3}/\d{4}-\d{2}',
         'telefone': '(\(?\d{2}\)?\s)?(\d{4,5}\-\d{4})',
-        'telefoneAPI': '\d{13}'
+        'telefone2': r'\+[\d]{2}\D*[\d]{2}\D*[\d]{4,5}\D*[\d]{4}',
+        'telefoneAPI': r'\=?[\d]{13}'
+        # 'telefoneAPI': r"\+?[\d]{2}\s*[\d]{2}\s*[\d]{4,5}\s*[\d]{4}"
         }
     return json.dumps(
         removeDuplicado(
@@ -33,7 +35,14 @@ def getRequest(url):
             headers=True
         )
         sleep(random.randint(2,30)) 
-        return requests.get(url, headers=header.generate()) 
+        return requests.get(url, headers=header.generate()) # timeout=5,verify = False
+        # ua = UserAgent()
+        # sleep(random.randint(2,30)) 
+        # response = requests.get(url, {"User-Agent": ua.random} )  
+        # if response.status_code != 200:
+        #     sleep(random.randint(2,30)) 
+        #     response = requests.get(url, headers=header.generate() ) 
+        # return response
 
     except HTTPError as http_err:
         print(f'Erro HTTP: {http_err}')
