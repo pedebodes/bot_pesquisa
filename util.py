@@ -13,14 +13,13 @@ def removeDuplicado(valor):
     
 def regex(opcao,arquivo):
     tipoRegex={
-        'email':r'[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+',
-        'cep': 'CEP\s*(\d{5})-(\d{3})',
-        'cnpj': '\d{2}.\d{3}.\d{3}/\d{4}-\d{2}',
-        'telefone': '(\(?\d{2}\)?\s)?(\d{4,5}\-\d{4})',
-        'telefone2': r'\+[\d]{2}\D*[\d]{2}\D*[\d]{4,5}\D*[\d]{4}',
-        'telefoneAPI': r'\=?[\d]{13}'
-        # 'telefoneAPI': r"\+?[\d]{2}\s*[\d]{2}\s*[\d]{4,5}\s*[\d]{4}"
+        'email':re.compile(r'[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+'),
+        'cep': re.compile(r'\s+(\d{5})[- ](\d{3})\s*'),
+        'cnpj': re.compile(r'\d{2}.\d{3}.\d{3}/\d{4}-\d{2}'),
+        'telefone': re.compile(r'\+?5?5?[\-\.\s]*\(?(\d{2})\)?\s+(\d{4,5})[-. ]?(\d{4})'),
+        'telefoneAPI': re.compile(r'\=+[\d]{13}\&+')
         }
+    
     return json.dumps(
         removeDuplicado(
             re.findall(
@@ -28,6 +27,8 @@ def regex(opcao,arquivo):
                 )
             )
         )
+    
+
     
 def getRequest(url):
     try:
