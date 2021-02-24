@@ -14,7 +14,7 @@ import random # aqui
 import util
 import json
 from collections import deque 
-from sqlalchemy import func
+import numpy as np
 
 header = Headers(
         headers=True
@@ -37,83 +37,50 @@ def getUrls(busca,n_results=3000):
     session.add(item_pesquisa)
     session.commit()
 
-    ua = UserAgent()
-    sleep(random.randint(2,30)) 
-    response = requests.get(url, {"User-Agent": ua.random} )  
-    if response.status_code != 200:
-        sleep(random.randint(2,30)) 
-        response = requests.get(url, headers=header.generate() ) 
-
-    # response = util.getRequest(url)
+    response = util.getRequest(url)
     soup = BeautifulSoup(response.text, "html.parser")
-    result = soup.find_all('div', attrs = {'class': 'ZINbbc'})
-    
     results = []
-    for i in result:
-        ln = i.find('a', href = True)            
-        if ln is not None:
-            results.append(re.search('\/url\?q\=(.*)\&sa',str(ln['href'])))
-    results = res = [i for i in results if i] 
     
-    links=[i.group(1) for i in results if i != None]
-    for x in results:
-        if x != None:
-
-            ul =urlparse(x.group(1)).netloc.split('.')[0]
-            if ul == 'www':
-                ul =urlparse(x.group(1)).netloc.split('.')[1]
-
-            ignorar = session.query(UrlIgnorar)\
-                .filter(UrlIgnorar.dominio == urlparse(x.group(1)).scheme+"://"+urlparse(x.group(1)).netloc)\
+    links = [a['href'] for a in soup.find_all('a', href=True)]
+    for i in links:
+        if i.startswith('https') or i.startswith('http'):
+            ignorar = session.query(UrlIgnorar).\
+                filter(UrlIgnorar.dominio == urlparse(i).scheme+"://"+urlparse(i).netloc)\
                     .all() 
             if len(ignorar) == 0:
-                
-                ext = pathlib.Path(x.group(1)).suffix
-                
-                ignorarExtensoes = ['.xls','.xlsx', '.pdf', '.rar', '.exe']
+                url = urlparse(i).scheme+"://"+urlparse(i).netloc
+                results.append(url)
+    
+    
+    semDuplicados = np.unique(results).tolist()
+    
+    for i in semDuplicados:
+        if i.find('blog') == -1: #removendo url de blog
+            addUrl = UrlBase()
+            addUrl.dominio = i
+            addUrl.url = i
+            session.add(addUrl)
+            session.commit()
 
-                result = list(filter(lambda x: str(ext).lower() in x, ignorarExtensoes))  
-                
-                addUrl = UrlBase()
-                if bool(urlparse(x.group(1)).netloc.strip()):
-                    if len(result) > 0:
-                        addUrl.dominio = urlparse(x.group(1)).netloc
-                        addUrl.url = x.group(1)
-                    else:
-                        addUrl.dominio = urlparse(x.group(1)).netloc
-                        addUrl.url = urlparse(x.group(1)).scheme+"://"+urlparse(x.group(1)).netloc
+            it_url = itemUrl()
+            it_url.url_id =addUrl.id
+            it_url.item_pesquisa_id = item_pesquisa.id
+            session.add(it_url)
+    
 
-                    session.add(addUrl)
-                    session.commit()
-                
-                    it_url = itemUrl()
-                    it_url.url_id =addUrl.id
-                    it_url.item_pesquisa_id = item_pesquisa.id
-                    session.add(it_url)
-                    
-                
     session.commit()
+    return (item_pesquisa.id) 
     
-    # Removendo registros duplicados
-    result = session.query(UrlBase)\
-    .group_by(UrlBase.dominio)\
-    .having(func.count(UrlBase.dominio) > 1)\
-    .all()
-    for i in result:
-        session.query(UrlBase).filter(UrlBase.id==i.id).delete()
-    session.commit()
-    
-    return (item_pesquisa.id)    
-    
-
     
 def pesquisa(busca):
-    item_pesquisa = getUrls(busca)
-    getDados(item_pesquisa)
     
+    item_pesquisa = getUrls(busca)
+    
+    getDados(item_pesquisa)
+
     
     # getDados(1)
-    
+
     return "aui"
 
 
@@ -131,10 +98,9 @@ def getDados(item_pesquisa):
         .all()
 
     # result = session.query(UrlBase)\
-    #     .filter(UrlBase.id.in() )\
+    #     .filter(UrlBase.id == 13 )\
     #     .distinct()\
     #     .all()
-        # .filter(UrlBase.id == 21 )\
         # .filter(UrlBase.cnpj == "" and UrlBase.telefone_fixo == "" and UrlBase.telefone_celular == "" and UrlBase.cep == "")\
         # .filter(UrlBase.dominio == 'www.cofermeta.com.br')\
         
@@ -149,7 +115,7 @@ def getDados(item_pesquisa):
             print(response)
             if response:
                 if response.status_code != 200:#403 404
-                    print("DEU ERRO")
+                    print("DEU ERRO") #<Response [999]>
                     import pdb; pdb.set_trace()
                 print("############################")    
                 parts = urlsplit(url)
@@ -182,27 +148,27 @@ def getDados(item_pesquisa):
                         pass
 
                 fixo =util.regex('telefone',response.text) 
-                fixo2 =util.regex('telefone2',response.text) 
+                # fixo2 =util.regex('telefone2',response.text) 
                 
-                if len(json.loads(fixo2)) > 0:
-                    fixo = json.dumps(json.loads(fixo) + (json.loads(fixo2)))
+                # if len(json.loads(fixo2)) > 0:
+                #     fixo = json.dumps(json.loads(fixo) + (json.loads(fixo2)))
                     
                     
                 if fixo is not None and fixo != '[]':
                     session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_fixo": fixo})
                     
-                celularAPI =util.regex('telefoneAPI',response.text) 
+                # celularAPI =util.regex('telefoneAPI',response.text) 
                 
-                if celularAPI is not None and celularAPI != '[]':
-                    # celularAPI = celularAPI if celularAPI[:2] == '55' else None
-                    if celularAPI is not None:
-                        z = []
-                        celularAPI = json.loads(celularAPI)
-                        for i in celularAPI:
-                            if i[:3] == '=55':
-                                z.append(i[1:])
-                        z = json.dumps(z)                        
-                        session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_celular": z })
+                # if celularAPI is not None and celularAPI != '[]':
+                #     # celularAPI = celularAPI if celularAPI[:2] == '55' else None
+                #     if celularAPI is not None:
+                #         z = []
+                #         celularAPI = json.loads(celularAPI)
+                #         for i in celularAPI:
+                #             if i[:3] == '=55':
+                #                 z.append(i[1:])
+                #         z = json.dumps(z)                        
+                #         session.query(UrlBase).filter(UrlBase.id == row.id).update({"telefone_celular": z })
                 
                     
                     
@@ -266,7 +232,4 @@ def addUrlIgnorar(url):
         url_ignorar.dominio = i if i[-1] != '/' else i[:-1]
         session.add(url_ignorar)
         session.commit()
-
-    return "Adicionado com sucesso"
-    
     
