@@ -8,11 +8,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import sessionmaker,mapper
+from sqlalchemy.orm import sessionmaker
 import datetime
 
-from sqlalchemy.sql.expression import column
-# from citext import CIText # ERRO NO POSTGRES: type "citext" does not exist
+from citext import CIText
 load_dotenv(find_dotenv())
 Base = declarative_base()
 
@@ -25,7 +24,7 @@ class Pesquisa(Base):
     __tablename__='pesquisas'
     id = Column(Integer, primary_key=True)
     usuario_id = Column(Integer)
-    termo = Column(String)
+    termo = Column(CIText())
     status = Column(Integer, default=0)
     data_pesquisa = Column(DateTime, default=datetime.datetime.now())  
 
@@ -114,6 +113,7 @@ class ResultadoTelefone(Base):
     # 1 - Valido
     # 2 - Invalido
     
+    
 class ResultadoEmail(Base):
     __tablename__='resultados_email'
     id = Column(Integer, primary_key=True)
@@ -127,25 +127,19 @@ class ResultadoEmail(Base):
     # 1 - Valido
     # 2 - Invalido
 
-
 class DominiosIgnorados(Base):
     __tablename__='dominios_ignorar'
     id = Column(Integer, primary_key=True)
     dominio = Column(String)    
 
 
-def create_tables():
-    try:
-        Base.metadata.create_all(engine)
-        print ("Executado com sucesso.")
-    except:
-        print ("Ocorreu erro na criação das tabelas, favor verificar")
-
-
 def main():
+    try:
+        engine.execute("CREATE EXTENSION citext;") 
+    except:
+        pass
     Base.metadata.create_all(engine)
 
-    create_tables()
     
 
 if __name__=='__main__':
