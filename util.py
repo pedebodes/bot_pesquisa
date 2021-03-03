@@ -18,8 +18,7 @@ def regex(opcao,arquivo):
         }
     
     return re.findall(tipoRegex.get(opcao), arquivo)
-    
-    
+
 def getRequest(url):
     
     try:

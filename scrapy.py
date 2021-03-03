@@ -51,15 +51,12 @@ def getUrlGoogle(busca,item_pesquisa):
         falha.mensagem = util.getRequest(url)
     return (item_pesquisa)
     
-
-
 def getDadosCEP(cep):
     url = ('http://www.viacep.com.br/ws/%s/json' % cep)
     req = util.getRequest(url) 
     if req.status_code == 200:
         dados_json = json.loads(req.text)
         return dados_json
-
 
 def getDadosCNPJ(cnpj):
     cnpj = util.parse_input(cnpj)
@@ -68,7 +65,6 @@ def getDadosCNPJ(cnpj):
     if req.status_code == 200:
         return json.loads(req.text)
 
-     
 def getCNPJ(response,idResultado):
     try:
         cnpj = np.unique(util.regex('cnpj',response)).tolist()
@@ -85,7 +81,6 @@ def getCNPJ(response,idResultado):
                 session.commit()
     except:
         pass
-
 
 def getCEP(response,idResultado):
     try:
@@ -148,6 +143,7 @@ def getEmail(response,idResultado):
             session.commit()    
     except:
         pass
+
 # Adicionar Url na tabela URL_IGNORAR
 def addDominiosIgnorados(url):
     for i in url:    
@@ -155,7 +151,6 @@ def addDominiosIgnorados(url):
         url_ignorar.dominio = i if i[-1] != '/' else i[:-1]
         session.add(url_ignorar)
         session.commit()
-
 
 def coletaDadosUrl(id_url,url_base=False):
 
@@ -191,7 +186,6 @@ def coletaDadosUrl(id_url,url_base=False):
         session.add(falha)
         session.commit()
             
-    
 def getDadosPesquisa(item_pesquisa):
     
     result = session.query(Resultados)\
@@ -202,7 +196,6 @@ def getDadosPesquisa(item_pesquisa):
 
     for i in result:
         coletaDadosUrl(i.id,i.url_base)    
-
 
 def getDadosResultadoFalha(item_pesquisa):
 
@@ -215,26 +208,105 @@ def getDadosResultadoFalha(item_pesquisa):
         # remove da tabela de falhas o registro que sera reprocessado
         session.query(ResultadoFalha).filter(ResultadoFalha.resultado_id == i.id).delete()
         coletaDadosUrl(i.id,i.url_base)    
-        
-        
     
 def cadastraPesquisa(termo,usuario_id):
-
     item_pesquisa = Pesquisa()
     item_pesquisa.usuario_id = usuario_id
     item_pesquisa.termo = termo
     session.add(item_pesquisa)
     session.commit()
-         
-    pesquisa = getUrlGoogle(termo,item_pesquisa.id)
-    getDadosPesquisa(pesquisa)
     
-    # getDadosPesquisa(3) # coleta dados a partir de id_pesquisa
-    # coletaDadosUrl((185))  Coleta dados informando um id e uma url da tabela resultados
-    # getDadosResultadoFalha(3) # processar Urls que deram falha a partir de id_pesquisa
+    return item_pesquisa.id
 
-    return "Processado"
+# Retorna  todas as pesquisas ja realizadas         
+def retornaPesquisas():
+    result = session.query(Pesquisa).\
+            all()
+    def create_item(item):
+        return {
+            'id':item.id,
+            'termo':item.termo,
+            'status':item.status,
+            'data_pesquisa':item.data_pesquisa,
+        }
+    retorno ={} 
+    retorno['resultado'] = [*map(create_item,result)]
+    return retorno
 
+#  Retorna os resultados de uma pesquisa
+def retornaResultadosPesquisa(pesquisa_id):
+    resultado = session.query(Pesquisa.id.label("pesquisa_id"),Pesquisa.termo,Pesquisa.data_pesquisa,Pesquisa.status.label("status_pesquisa"),Resultados.id.label("resultado_id"),Resultados.url_base,Resultados.status.label("status_resultado")).\
+        join(PesquisaResultados,PesquisaResultados.pesquisa_id == Pesquisa.id).\
+        join(Resultados,Resultados.id == PesquisaResultados.resultado_id).\
+        filter(Pesquisa.id == pesquisa_id).\
+        all()
 
+    def create_item(item):
+        return {
+        'pesquisa_id':item.pesquisa_id,
+        'termo':item.termo,
+        'data_pesquisa':str(item.data_pesquisa),
+        'status_pesquisa':item.status_pesquisa,
+        'resultado_id':item.resultado_id,
+        'url_base':item.url_base,
+        'status_resultado':item.status_resultado
+    }
+    retorno ={} 
+    retorno['resultado'] = [*map(create_item,resultado)]
+    return retorno
 
-
+# retorna dados do resultado
+def retornaDadosResultado(resultado_id):
+    resultado = session.query(Resultados).filter(Resultados.id == resultado_id).all()
+    resultadoCNPJ = session.query(ResultadoCNPJ).filter(ResultadoCNPJ.resultado_id == resultado_id).all()
+    resultadoCEP = session.query(ResultadoCEP).filter(ResultadoCEP.resultado_id == resultado_id).all()
+    resultadoEmail = session.query(ResultadoEmail).filter(ResultadoEmail.resultado_id == resultado_id).all()
+    resultadoTelefone = session.query(ResultadoTelefone).filter(ResultadoTelefone.resultado_id == resultado_id).all()
+    
+    def create_resultado(item):
+        return{
+            "id":item.id,
+            "url_base":item.url_base,
+            "status": item.status
+        }
+    def create_CNPJ(item):
+        return {
+            "id":item.id,
+            "cnpj":item.cnpj,
+            "dados_cnpj":item.dados_cnpj,
+            "status":item.status            
+        }
+    def create_CEP(item):
+        return {
+            "id":item.id,
+            "cep":item.cep,
+            "dados_cep":item.dados_cep,
+            "status":item.status
+        }
+    def create_Email(item):
+        return {
+            "id": item.id,
+            "email": item.email,
+            "status": item.status
+        }
+    def create_Telefone(item):
+        return {
+            "id":item.id,
+            "ddd":item.ddd,
+            "numero":item.numero,
+            "status":item.status
+        }
+        
+    resultado = [*map(create_resultado,resultado)]
+    resultadoCNPJ = [*map(create_CNPJ,resultadoCNPJ)]
+    resultadoCEP = [*map(create_CEP,resultadoCEP)]
+    resultadoEmail = [*map(create_Email,resultadoEmail)]
+    resultadoTelefone = [*map(create_Telefone,resultadoTelefone)]
+    
+    retorno = {}
+    retorno['resultado'] = resultado
+    retorno['resultadoCNPJ'] = resultadoCNPJ if len(resultadoCNPJ)else ["Não foi possivel coletar esta informação"]
+    retorno['resultadoCEP'] = resultadoCEP if len(resultadoCEP)else ["Não foi possivel coletar esta informação"]
+    retorno['resultadoEmail'] = resultadoEmail if len(resultadoEmail)else ["Não foi possivel coletar esta informação"]
+    retorno['resultadoTelefone'] = resultadoTelefone if len(resultadoTelefone)else ["Não foi possivel coletar esta informação"]
+    return retorno
