@@ -13,3 +13,7 @@ api.add_resource(DominiosIgnoradosRemove,
 
 api.add_resource(PesquisaList, '/termos_pesquisados/')
 api.add_resource(Pesquisa, '/pesquisa/')
+api.add_resource(DadosUrl, '/coletar_dados_url/')
+api.add_resource(DadosTermo, '/coletar_dados_termo/')
+api.add_resource(ReprocessaPesquisaFalha,
+                 '/reprocessa_pesquisa_falha/<int:termo_id>/')
