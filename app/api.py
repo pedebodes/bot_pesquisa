@@ -1,6 +1,12 @@
-from flask_restful import Resource
-from flask import request
+from flask import Flask,  request
+from flask_restful import Resource, Api
+from flask_cors import CORS
+
 import scrapy
+
+app = Flask(__name__)
+CORS(app)
+api = Api(app)
 
 
 class DominiosIgnorados(Resource):
@@ -40,11 +46,11 @@ class Pesquisa(Resource):
     def post(self):
         try:
             dados = request.get_json()
-            item_pesquisa = scrapy.cadastraPesquisa(
-                dados['termo'], dados['user_id'])
-            if item_pesquisa['status'] == 'cadastrado com successo':
-                scrapy.getPesquisa(
-                    dados['termo'], item_pesquisa['item_pesquisa'])
+            item_pesquisa = scrapy.cadastraPesquisa(dados['termo'], dados['user_id'])
+
+            if item_pesquisa['status'] == "cadastrado com sucesso":
+                scrapy.getPesquisa(dados['termo'], item_pesquisa['item_pesquisa'])
+           
             return {'success': {"status": item_pesquisa['status'],
                                 "itemPesquisa": item_pesquisa}}, 200
         except Exception as e:
@@ -77,3 +83,12 @@ class ReprocessaPesquisaFalha(Resource):
     def get(sel, termo_id):
         scrapy.getDadosResultadoFalha(termo_id)
         return {'success': "reprocessado"}, 200
+
+    
+api.add_resource(DominiosIgnorados, '/dominios_ignorar/')
+api.add_resource(DominiosIgnoradosRemove, '/dominios_ignorar/<int:url_id>/')
+api.add_resource(Pesquisa, '/pesquisa/')
+api.add_resource(Resultado, '/resultado/<int:pesquisa_id>')
+api.add_resource(DadosUrl, '/coletar_dados_url/')
+api.add_resource(DadosTermo, '/coletar_dados_termo/')
+api.add_resource(ReprocessaPesquisaFalha,'/reprocessa_pesquisa_falha/<int:termo_id>/')

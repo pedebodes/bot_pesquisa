@@ -267,7 +267,7 @@ def retornaPesquisas():
     def create_item(item):
         return {
             'id': item.id,
-            'usuario_id': item.usuario_id,
+            'usuario_id':item.usuario_id,
             'termo': item.termo,
             'status': item.status,
             'data_pesquisa': str(item.data_pesquisa),
