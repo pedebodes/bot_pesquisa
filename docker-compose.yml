@@ -5,18 +5,22 @@ services:
       build:
         context:  ./app
         dockerfile: Dockerfile
-      expose:
-        - "8080"
       volumes:
         - /usr/src/app            
+      networks:
+        - dbnet        
       depends_on:
-          - db_bot
+        - db_bot
 
     db_bot:
         image: postgres:12
         restart: always
         env_file:
           - app/.env
+        networks:
+          - dbnet
+        ports:
+          - "55432:5432"
         volumes:
           - postgres_data:/var/lib/postgresql/data/
 
@@ -26,11 +30,17 @@ services:
         context:  ./nginx
         dockerfile: Dockerfile
       ports:
-        - "80:80"
+        - "8180:80"
       links:
         - app
       depends_on:
         - app
         - db_bot
+      networks:
+        - dbnet        
+
 volumes:
   postgres_data:
+
+networks:
+  dbnet:
