@@ -8,7 +8,7 @@ services:
       volumes:
         - /usr/src/app            
       networks:
-        - dbnet        
+        - spb_net        
       depends_on:
         - db_bot
 
@@ -18,7 +18,7 @@ services:
         env_file:
           - app/.env
         networks:
-          - dbnet
+          - spb_net
         ports:
           - "55432:5432"
         volumes:
@@ -37,10 +37,10 @@ services:
         - app
         - db_bot
       networks:
-        - dbnet        
+        - spb_net        
 
 volumes:
   postgres_data:
 
 networks:
-  dbnet:
+  spb_net:
