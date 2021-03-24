@@ -7,7 +7,7 @@ import json
 from collections import deque
 import numpy as np
 from validate_email import validate_email
-
+from sqlalchemy.sql import exists
 
 def getUrlGoogle(busca, item_pesquisa):
     busca = urllib.parse.quote_plus(busca)
@@ -152,16 +152,14 @@ def getEmail(response, idResultado):
     except:
         pass
 
-# Adicionar Url na tabela URL_IGNORAR
-
-
 def addDominiosIgnorados(url):
     for i in url:
-        url_ignorar = DominiosIgnorados()
-        url_ignorar.dominio = i if i[-1] != '/' else i[:-1]
-        session.add(url_ignorar)
-        session.commit()
-
+        result = session.query(exists().where(DominiosIgnorados.dominio.like(i if i[-1] != '/' else i[:-1]))).scalar()
+        if not result:
+            url_ignorar = DominiosIgnorados()
+            url_ignorar.dominio = i if i[-1] != '/' else i[:-1]
+            session.add(url_ignorar)
+            session.commit()
 
 def getDominiosIgnorados():
     result = session.query(DominiosIgnorados).all()
